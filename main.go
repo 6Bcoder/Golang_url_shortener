@@ -143,3 +143,26 @@ func getTopDomains() []string {
 	}
 	return topDomains
 }
+func ShortHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+	type RequestData struct {
+		LongURL string `json:"longURL"`
+	}
+	var reqData RequestData
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&reqData)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	shortURL, err := Shorten(reqData.LongURL)
+	if err != nil {
+		http.Error(w, "Error shortening URL", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"shortURL": shortURL})
+}
