@@ -115,3 +115,31 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Redirecting to: %s", longURL)
 	http.Redirect(w, r, longURL, http.StatusFound)
 }
+func MetricHandler(w http.ResponseWriter, r *http.Request) {
+	if len(domainVisitCounts) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	topDomains := getTopDomains()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(topDomains)
+}
+func getTopDomains() []string {
+	type domainCountPair struct {
+		Domain string
+		Count  int
+	}
+	var pairs []domainCountPair
+	for domain, count := range domainVisitCounts {
+		pairs = append(pairs, domainCountPair{domain, count})
+	}
+
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].Count > pairs[j].Count
+	})
+	topDomains := make([]string, 0, 3)
+	for i := 0; i < 3 && i < len(pairs); i++ {
+		topDomains = append(topDomains, fmt.Sprintf("%s: %d", pairs[i].Domain, pairs[i].Count))
+	}
+	return topDomains
+}
