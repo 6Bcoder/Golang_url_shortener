@@ -40,7 +40,7 @@ Request Body (JSON):
 }
 Response Body (JSON):
 {
-  "shortURL": "http://localhost:3000/shortURL"
+  "shortURL": "swewrgg"
 }
 GET /redirect/{shortURL}: Redirect to the original long URL.
 Example: http://localhost:3000/redirect/{shortURL}.
