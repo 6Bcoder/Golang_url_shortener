@@ -84,3 +84,13 @@ func randomStringGenerator(length int) string {
 	}
 	return string(random)
 }
+func updateDomainCount(longURL string) {
+	url, err := url.Parse(longURL)
+	if err != nil {
+		log.Printf("Error parsing URL: %v", err)
+		return
+	}
+
+	domain := url.Hostname()
+	domainVisitCounts[domain]++
+}
