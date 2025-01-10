@@ -70,3 +70,48 @@ func TestShorten(t *testing.T) {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
+func TestRedirect(t *testing.T) {
+	setupMockDB()
+	defer closeMockDB()
+	t.Run("Redirect Found", func(t *testing.T) {
+		shortURL := "abc123"
+		longURL := "https://example.com"
+		mock.ExpectQuery("SELECT longURL FROM UrlRecord WHERE shortURL = ?").
+			WithArgs(shortURL).
+			WillReturnRows(sqlmock.NewRows([]string{"longURL"}).AddRow(longURL))
+
+		mockRequest, err := http.NewRequest("GET", "/redirect/"+shortURL, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(Redirect)
+		handler.ServeHTTP(response, mockRequest)
+		assert.Equal(t, http.StatusFound, response.Code)
+		assert.Equal(t, longURL, response.Header().Get("Location"))
+		err = mock.ExpectationsWereMet()
+		if err != nil {
+			t.Errorf("There were unfulfilled expectations: %s", err)
+		}
+	})
+	t.Run("Redirect Not Found", func(t *testing.T) {
+		shortURL := "xyz789"
+		mock.ExpectQuery("SELECT longURL FROM UrlRecord WHERE shortURL = ?").
+			WithArgs(shortURL).
+			WillReturnError(sql.ErrNoRows)
+
+		mockRequest, err := http.NewRequest("GET", "/redirect/"+shortURL, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response := httptest.NewRecorder()
+		handler := http.HandlerFunc(Redirect)
+		handler.ServeHTTP(response, mockRequest)
+		assert.Equal(t, http.StatusNotFound, response.Code)
+		err = mock.ExpectationsWereMet()
+		if err != nil {
+			t.Errorf("There were unfulfilled expectations: %s", err)
+		}
+	})
+}
