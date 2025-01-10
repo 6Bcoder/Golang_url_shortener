@@ -115,3 +115,17 @@ func TestRedirect(t *testing.T) {
 		}
 	})
 }
+func TestMetrics(t *testing.T) {
+	resetDomainCounts()
+	TestShorten(t)
+	mockRequest, err := http.NewRequest("GET", "/metrics", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := httptest.NewRecorder()
+	handler := http.HandlerFunc(MetricHandler)
+	handler.ServeHTTP(response, mockRequest)
+	assert.Equal(t, http.StatusOK, response.Code)
+	expectedResponse := `["example.com: 1", "newsite.com: 1"]`
+	assert.JSONEq(t, expectedResponse, response.Body.String())
+}
