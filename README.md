@@ -20,7 +20,8 @@ A simple URL shortener application built in Go using SQLite as the database for 
 git clone https://github.com/6Bcoder/Golang_url_short.git
 cd Golang_url_short
 
-1. Install the required Go dependencies:
+1. Install the required Go dependencies: Make sure Go is installed, and install the SQLite Go driver:
+go get github.com/mattn/go-sqlite3
 
 2. Set Up SQLite Database:
 Make sure you have SQLite installed on your machine. The database for this project is stored in urlshortener.db, which you can change by editing the dbFile constant in the main.go file.
