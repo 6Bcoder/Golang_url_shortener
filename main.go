@@ -94,3 +94,24 @@ func updateDomainCount(longURL string) {
 	domain := url.Hostname()
 	domainVisitCounts[domain]++
 }
+func Redirect(w http.ResponseWriter, r *http.Request) {
+	shortURL := r.URL.Path[len("/redirect/"):]
+	var longURL string
+	err := db.QueryRow("SELECT longURL FROM UrlRecord WHERE shortURL = ?", shortURL).Scan(&longURL)
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, "Invalid Short Url", http.StatusNotFound)
+		log.Printf("Error fetching long URL for short URL: %s", shortURL)
+		return
+	}
+	log.Printf("Resolved long URL: %s", longURL)
+
+	if longURL == "" {
+		http.Error(w, "Short Url not Found", http.StatusNotFound)
+		return
+	}
+
+	updateDomainCount(longURL)
+
+	log.Printf("Redirecting to: %s", longURL)
+	http.Redirect(w, r, longURL, http.StatusFound)
+}
