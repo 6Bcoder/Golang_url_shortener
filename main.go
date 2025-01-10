@@ -166,3 +166,11 @@ func ShortHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"shortURL": shortURL})
 }
+func main() {
+	defer db.Close()
+	http.HandleFunc("/shorten", ShortHandler)
+	http.HandleFunc("/redirect/", Redirect)
+	http.HandleFunc("/metrics", MetricHandler)
+	log.Println("Server is running on http://localhost:3000")
+	log.Fatal(http.ListenAndServe(":3000", nil))
+}
