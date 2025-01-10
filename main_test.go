@@ -31,3 +31,12 @@ func closeMockDB() {
 		db.Close()
 	}
 }
+func incrementRequestCount(longURL string) {
+	parsedURL, err := url.Parse(longURL)
+	if err != nil {
+		log.Printf("Error parsing URL: %v", err)
+		return
+	}
+	fmt.Println("Parsed domain:", parsedURL.Host)
+	domainVisitCounts[parsedURL.Host]++
+}
